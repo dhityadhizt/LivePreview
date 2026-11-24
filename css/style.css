@@ -37,7 +37,7 @@
   color: #ffffff;
 }
 
-/* Device Frame Dimensions & Bezels */
+/* True-to-Life Device Viewport Dimensions */
 .device-desktop {
   width: 100%;
   height: 100%;
@@ -45,34 +45,32 @@
   border: 1px solid #30363d;
 }
 
+/* Android Flagship (412 x 915 CSS px) */
 .device-android {
-  width: 380px;
-  height: 760px;
-  max-height: 100%;
-  border-radius: 28px;
-  border: 10px solid #1f242d;
-  box-shadow: 0 0 0 2px #374151, 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+  width: 412px;
+  height: 915px;
+  border-radius: 32px;
+  border: 11px solid #1f242d;
+  box-shadow: 0 0 0 2px #374151, 0 25px 50px -12px rgba(0, 0, 0, 0.8);
 }
 
 .device-android.landscape {
-  width: 760px;
-  height: 380px;
-  max-width: 100%;
+  width: 915px;
+  height: 412px;
 }
 
+/* iOS iPhone 15 Pro (393 x 852 CSS px) */
 .device-ios {
-  width: 390px;
-  height: 780px;
-  max-height: 100%;
-  border-radius: 44px;
-  border: 11px solid #18181b;
-  box-shadow: 0 0 0 2px #3f3f46, 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  width: 393px;
+  height: 852px;
+  border-radius: 48px;
+  border: 12px solid #18181b;
+  box-shadow: 0 0 0 2px #3f3f46, 0 25px 50px -12px rgba(0, 0, 0, 0.85);
 }
 
 .device-ios.landscape {
-  width: 780px;
-  height: 390px;
-  max-width: 100%;
+  width: 852px;
+  height: 393px;
 }
 
 /* Tree item active highlight */
