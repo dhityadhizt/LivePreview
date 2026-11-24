@@ -3,22 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GitPreview IDE — GitHub Repo & Real-Time Multi-Device Preview</title>
-  <!-- Tailwind CSS -->
+  <title>GitPreview IDE v3 — Real Service Worker GitHub Pages Simulator</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- JSZip for Client-Side GitHub ZIP Extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Highlight.js for Syntax Highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Custom Styles -->
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body class="bg-[#0d1117] text-[#c9d1d9] font-sans h-screen flex flex-col overflow-hidden select-none">
 
-  <!-- Top Navbar (GitHub Dark Style) -->
+  <!-- Top Navbar -->
   <header class="h-13 bg-[#161b22] border-b border-[#30363d] px-4 py-2 flex items-center justify-between gap-3 shrink-0 z-30">
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-2 text-white font-bold tracking-tight">
@@ -31,9 +26,15 @@
       <span class="hidden md:inline-block text-[#30363d]">|</span>
 
       <!-- Repo Name Badge -->
-      <div id="repo-badge" class="hidden sm:flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] px-2.5 py-1 rounded-md text-xs text-[#8b949e]">
+      <div class="hidden sm:flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] px-2.5 py-1 rounded-md text-xs text-[#8b949e]">
         <i data-lucide="folder-git-2" class="w-3.5 h-3.5 text-emerald-400"></i>
-        <span id="repo-name-display" class="font-mono text-[#c9d1d9]">sample-portfolio-main</span>
+        <span id="repo-name-display" class="font-mono text-[#c9d1d9]">landing-page-demo-main</span>
+      </div>
+
+      <!-- Engine Status Badge -->
+      <div id="engine-badge" class="hidden xl:flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] px-2 py-1 rounded-md text-[11px] font-mono text-emerald-400" title="Mode rendering yang aktif">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="engine-mode-text">Initializing Engine...</span>
       </div>
     </div>
 
@@ -65,7 +66,6 @@
 
       <!-- Sidebar: File Tree -->
       <aside class="w-56 sm:w-64 bg-[#161b22]/60 border-r border-[#30363d] flex flex-col shrink-0">
-        <!-- Search & Dropzone Header -->
         <div class="p-2.5 border-b border-[#30363d] space-y-2">
           <div id="dropzone" class="border border-dashed border-[#30363d] hover:border-emerald-500/70 bg-[#0d1117]/60 rounded-md p-2 text-center cursor-pointer transition group">
             <p class="text-[11px] text-[#8b949e] group-hover:text-[#c9d1d9]">
@@ -78,7 +78,6 @@
           </div>
         </div>
 
-        <!-- Entry HTML Selector -->
         <div class="px-2.5 py-2 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between gap-1">
           <span class="text-[10px] uppercase tracking-wider text-[#8b949e] font-semibold">Entry HTML:</span>
           <select id="entry-html-select" class="bg-[#0d1117] border border-[#30363d] rounded px-1.5 py-0.5 text-[11px] font-mono text-emerald-400 outline-none max-w-[130px] truncate">
@@ -86,12 +85,8 @@
           </select>
         </div>
 
-        <!-- File Tree List -->
-        <div id="file-tree" class="flex-1 overflow-y-auto p-1.5 space-y-0.5 text-xs font-mono">
-          <!-- Populated by JS -->
-        </div>
+        <div id="file-tree" class="flex-1 overflow-y-auto p-1.5 space-y-0.5 text-xs font-mono"></div>
 
-        <!-- File Stats Footer -->
         <div class="px-3 py-1.5 border-t border-[#30363d] text-[10px] text-[#8b949e] flex justify-between">
           <span id="file-count">0 files</span>
           <span id="repo-size">0 KB</span>
@@ -100,7 +95,6 @@
 
       <!-- Editor / Viewer Area -->
       <div class="flex-1 flex flex-col min-w-0 bg-[#0d1117]">
-        <!-- Active File Tab Bar -->
         <div class="h-9 bg-[#161b22] border-b border-[#30363d] px-3 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-2 min-w-0">
             <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
@@ -115,22 +109,18 @@
           </div>
         </div>
 
-        <!-- Code Editor Container (Line Numbers + Highlight Overlay + Transparent Textarea) -->
         <div id="code-editor-wrapper" class="flex-1 relative flex overflow-hidden font-mono text-xs sm:text-[13px] leading-6">
-          <!-- Line Numbers -->
           <div id="line-numbers" class="w-11 bg-[#0d1117] border-r border-[#21262d] text-[#484f58] text-right pr-2.5 pt-3 select-none overflow-hidden shrink-0">1</div>
-
-          <!-- Editor Stack -->
           <div class="relative flex-1 h-full overflow-hidden">
             <pre id="code-highlight-pre" aria-hidden="true" class="absolute inset-0 m-0 p-3 pointer-events-none overflow-auto whitespace-pre"><code id="code-highlight" class="language-html"></code></pre>
             <textarea id="code-textarea" spellcheck="false" autocomplete="off" autocapitalize="off" class="absolute inset-0 w-full h-full m-0 p-3 bg-transparent text-transparent caret-white resize-none outline-none overflow-auto whitespace-pre font-mono text-xs sm:text-[13px] leading-6 selection:bg-emerald-500/30"></textarea>
           </div>
         </div>
 
-        <!-- Binary / Image Asset Viewer (Hidden by default) -->
         <div id="asset-viewer" class="hidden flex-1 flex-col items-center justify-center p-6 bg-[#0d1117] overflow-auto">
           <div class="max-w-md w-full bg-[#161b22] border border-[#30363d] rounded-xl p-4 text-center space-y-3">
-            <img id="asset-preview-img" src="" alt="Asset Preview" class="max-h-64 mx-auto rounded border border-[#30363d] object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iIzIxMjYyZCIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMyMTI2MmQiLz48L3N2Zz4=')]" />
+            <img id="asset-preview-img" src="" alt="Asset Preview" class="hidden max-h-64 mx-auto rounded border border-[#30363d] object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iIzIxMjYyZCIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMyMTI2MmQiLz48L3N2Zz4=')]" />
+            <audio id="asset-preview-audio" controls class="hidden w-full"></audio>
             <p id="asset-info" class="text-xs text-[#8b949e] font-mono"></p>
           </div>
         </div>
@@ -139,7 +129,6 @@
 
     <!-- RIGHT PANE: Real-Time Multi-Device Preview -->
     <section id="right-pane" class="w-full lg:w-1/2 h-1/2 lg:h-full flex flex-col bg-[#090c10] overflow-hidden">
-      <!-- Preview Toolbar -->
       <div class="h-11 bg-[#161b22] border-b border-[#30363d] px-3 flex items-center justify-between gap-2 shrink-0">
         <!-- Device Switcher -->
         <div class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-[#30363d]">
@@ -158,8 +147,13 @@
         </div>
 
         <!-- Viewport Controls -->
-        <div class="flex items-center gap-2">
-          <span id="viewport-dimensions" class="hidden sm:inline text-[11px] font-mono text-[#8b949e] bg-[#0d1117] px-2 py-0.5 rounded border border-[#30363d]">1280 × 800</span>
+        <div class="flex items-center gap-1.5">
+          <span id="viewport-dimensions" class="hidden sm:inline text-[11px] font-mono text-[#8b949e] bg-[#0d1117] px-2 py-0.5 rounded border border-[#30363d]">100%</span>
+          <span id="zoom-badge" class="hidden md:inline text-[10px] font-mono text-emerald-400 bg-[#0d1117] px-1.5 py-0.5 rounded border border-[#30363d]">Scale 100%</span>
+
+          <button id="btn-open-newtab" class="p-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-sky-400 border border-[#363b42] transition" title="Buka Web Asli di Tab Baru">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </button>
 
           <button id="btn-rotate" class="p-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#363b42] transition disabled:opacity-40" title="Putar Orientasi (Portrait / Landscape)">
             <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
@@ -172,60 +166,59 @@
       </div>
 
       <!-- Device Stage Canvas -->
-      <div id="preview-stage" class="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-6 relative bg-[radial-gradient(#21262d_1px,transparent_1px)] [background-size:18px_18px]">
-        <!-- Device Frame Wrapper -->
-        <div id="device-frame" class="device-desktop transition-all duration-300 shadow-2xl flex flex-col bg-white overflow-hidden">
+      <div id="preview-stage" class="flex-1 overflow-hidden flex items-center justify-center p-4 relative bg-[radial-gradient(#21262d_1px,transparent_1px)] [background-size:18px_18px]">
+        <div id="device-scale-wrapper" class="origin-center transition-transform duration-200 flex items-center justify-center">
+          <div id="device-frame" class="device-desktop transition-all duration-300 shadow-2xl flex flex-col bg-white overflow-hidden">
 
-          <!-- Desktop Browser Chrome -->
-          <div id="chrome-desktop" class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex items-center gap-2 shrink-0">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+            <!-- Desktop Browser Chrome -->
+            <div id="chrome-desktop" class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+              </div>
+              <div class="flex-1 mx-2 bg-[#0d1117] rounded px-2.5 py-0.5 text-[11px] font-mono text-[#8b949e] flex items-center justify-between truncate">
+                <span id="preview-url-bar" class="truncate">/__preview__/index.html</span>
+                <span class="text-emerald-400 text-[10px] flex items-center gap-1 shrink-0">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
+                </span>
+              </div>
             </div>
-            <div class="flex-1 mx-2 bg-[#0d1117] rounded px-2.5 py-0.5 text-[11px] font-mono text-[#8b949e] flex items-center justify-between truncate">
-              <span id="preview-url-bar" class="truncate">https://username.github.io/repo/index.html</span>
-              <span class="text-emerald-400 text-[10px] flex items-center gap-1 shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
-              </span>
+
+            <!-- Android Status Bar -->
+            <div id="chrome-android" class="hidden h-7 bg-[#111827] text-white px-4 flex items-center justify-between text-[11px] font-medium shrink-0 relative">
+              <span>09:41</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-black border border-gray-700"></span>
+              <div class="flex items-center gap-1.5 text-[10px]">
+                <span>5G</span>
+                <span>100%</span>
+              </div>
             </div>
-          </div>
 
-          <!-- Android Status Bar -->
-          <div id="chrome-android" class="hidden h-7 bg-[#111827] text-white px-4 flex items-center justify-between text-[11px] font-medium shrink-0 relative">
-            <span>09:41</span>
-            <!-- Punch-hole Camera -->
-            <span class="w-2.5 h-2.5 rounded-full bg-black border border-gray-700"></span>
-            <div class="flex items-center gap-1.5 text-[10px]">
-              <span>5G</span>
-              <span>100%</span>
+            <!-- iOS Status Bar + Dynamic Island -->
+            <div id="chrome-ios" class="hidden h-11 bg-white text-black px-6 flex items-center justify-between text-[12px] font-semibold shrink-0 relative">
+              <span>9:41</span>
+              <div class="w-28 h-6 bg-black rounded-full flex items-center justify-end px-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#1a1a2e] border border-gray-800"></span>
+              </div>
+              <div class="flex items-center gap-1 text-[11px]">
+                <span>5G</span>
+                <span>🔋</span>
+              </div>
             </div>
-          </div>
 
-          <!-- iOS Status Bar + Dynamic Island -->
-          <div id="chrome-ios" class="hidden h-9 bg-white text-black px-5 flex items-center justify-between text-[11px] font-semibold shrink-0 relative">
-            <span>9:41</span>
-            <!-- Dynamic Island -->
-            <div class="w-24 h-5 bg-black rounded-full flex items-center justify-end px-2">
-              <span class="w-2 h-2 rounded-full bg-[#1a1a2e] border border-gray-800"></span>
+            <!-- Live Render Iframe (Served directly by sw.js over real HTTP origin) -->
+            <iframe id="preview-iframe" class="w-full flex-1 bg-white border-0"></iframe>
+
+            <!-- Android Navigation Gesture Bar -->
+            <div id="nav-android" class="hidden h-4 bg-[#111827] flex items-center justify-center shrink-0">
+              <span class="w-28 h-1 rounded-full bg-gray-500"></span>
             </div>
-            <div class="flex items-center gap-1 text-[10px]">
-              <span>5G</span>
-              <span>🔋</span>
+
+            <!-- iOS Home Indicator -->
+            <div id="nav-ios" class="hidden h-5 bg-white flex items-center justify-center shrink-0">
+              <span class="w-32 h-1 rounded-full bg-black/85"></span>
             </div>
-          </div>
-
-          <!-- Live Render Iframe -->
-          <iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin" class="w-full flex-1 bg-white border-0"></iframe>
-
-          <!-- Android Navigation Gesture Bar -->
-          <div id="nav-android" class="hidden h-4 bg-[#111827] flex items-center justify-center shrink-0">
-            <span class="w-24 h-1 rounded-full bg-gray-500"></span>
-          </div>
-
-          <!-- iOS Home Indicator -->
-          <div id="nav-ios" class="hidden h-5 bg-white flex items-center justify-center shrink-0">
-            <span class="w-28 h-1 rounded-full bg-black/80"></span>
           </div>
         </div>
       </div>
@@ -252,9 +245,9 @@
     Berhasil!
   </div>
 
-  <!-- Modular Application Scripts -->
+  <!-- Scripts -->
   <script src="./js/sampleRepo.js"></script>
-  <script src="./js/bundler.js"></script>
+  <script src="./js/fallbackBundler.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>

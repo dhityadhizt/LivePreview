@@ -1,23 +1,21 @@
-# GitPreview IDE — GitHub Repo & Real-Time Multi-Device Previewer
+# GitPreview IDE v3 — Real Service Worker GitHub Pages Simulator
 
-Aplikasi web statis siap host di **GitHub Pages** yang berfungsi untuk membaca, mengedit, dan mempratinjau repositori GitHub (`.zip`) secara real-time pada tampilan **Desktop**, **Android**, dan **iOS**.
+Menggunakan **Service Worker Virtual Server (`sw.js`)** yang menyajikan file hasil ekstraksi ZIP melalui jalur HTTP asli (`/__preview__/index.html`), sehingga seluruh perilaku web (`window.location`, `localStorage`, `fetch`, `XMLHttpRequest`, ES Modules, Web Workers, navigasi multi-halaman) berjalan **100% persis seperti web terpublikasi di GitHub Pages**.
 
-## Struktur Folder
+## Struktur File
 ```text
-gitpreview-ide/
-├── index.html          # Antarmuka utama IDE & Multi-Device Previewer
+gitpreview-ide-v3/
+├── index.html               # UI IDE & Multi-Device Previewer
+├── sw.js                    # Service Worker HTTP Virtual Server
 ├── css/
-│   └── style.css       # Styling tema GitHub Dark & bingkai perangkat (Desktop, Android, iOS)
+│   └── style.css            # Styling tema GitHub Dark & dimensi viewport perangkat
 ├── js/
-│   ├── sampleRepo.js   # Proyek contoh bawaan untuk uji coba langsung
-│   ├── bundler.js      # In-browser bundler (menggabungkan HTML, CSS, JS, & aset gambar)
-│   └── app.js          # Logika File Explorer, Code Editor, ZIP Extractor, & Console Bridge
-└── README.md           # Dokumentasi penggunaan & deploy ke GitHub Pages
+│   ├── sampleRepo.js        # Proyek contoh multi-halaman & localStorage
+│   ├── fallbackBundler.js   # Cadangan jika dibuka langsung via file://
+│   └── app.js               # Pengelola ZIP, Editor, SW Sync, & Device Viewport
+└── README.md
 ```
 
-## Cara Deploy ke GitHub Pages
-1. Ekstrak file `gitpreview-ide.zip`.
-2. Buat repositori baru di GitHub, lalu unggah seluruh isi folder `gitpreview-ide` (`index.html`, `css/`, `js/`, `README.md`) ke branch `main`.
-3. Buka tab **Settings** → **Pages** pada repositori GitHub Anda.
-4. Pada bagian **Build and deployment**, pilih **Deploy from a branch**, pilih branch `main` dan folder `/ (root)`, lalu klik **Save**.
-5. Tunggu beberapa saat hingga URL GitHub Pages Anda aktif dan siap digunakan!
+## Cara Menjalankan
+1. **Di GitHub Pages (Direkomendasikan)**: Unggah seluruh isi folder `gitpreview-ide-v3` ke repositori GitHub dan aktifkan **GitHub Pages**. `sw.js` akan otomatis aktif dan melayani pratinjau lewat HTTPS asli.
+2. **Di Lokal**: Jalankan melalui HTTP server lokal (misalnya `npx serve .` atau VS Code Live Server) agar Service Worker aktif.
