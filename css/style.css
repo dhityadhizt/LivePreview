@@ -1,1 +1,83 @@
+/* Custom Scrollbars (GitHub Dark Theme) */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
 
+/* Editor Highlighting Alignment */
+#code-highlight-pre,
+#code-textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  letter-spacing: normal;
+}
+
+#code-highlight-pre code.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Device Switcher Active State */
+.device-btn.active {
+  background-color: #238636;
+  color: #ffffff;
+}
+
+/* Device Frame Dimensions & Bezels */
+.device-desktop {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  border: 1px solid #30363d;
+}
+
+.device-android {
+  width: 380px;
+  height: 760px;
+  max-height: 100%;
+  border-radius: 28px;
+  border: 10px solid #1f242d;
+  box-shadow: 0 0 0 2px #374151, 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+}
+
+.device-android.landscape {
+  width: 760px;
+  height: 380px;
+  max-width: 100%;
+}
+
+.device-ios {
+  width: 390px;
+  height: 780px;
+  max-height: 100%;
+  border-radius: 44px;
+  border: 11px solid #18181b;
+  box-shadow: 0 0 0 2px #3f3f46, 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+.device-ios.landscape {
+  width: 780px;
+  height: 390px;
+  max-width: 100%;
+}
+
+/* Tree item active highlight */
+.tree-file.active {
+  background-color: rgba(46, 160, 67, 0.16);
+  color: #ffffff;
+  border-left: 2px solid #2ea043;
+}
