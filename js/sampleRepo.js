@@ -1,4 +1,3 @@
-// Default sample repository loaded on startup so the user can test immediately
 window.SAMPLE_REPO = {
   repoName: "landing-page-demo-main",
   files: {
@@ -9,22 +8,48 @@ window.SAMPLE_REPO = {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Demo GitHub Pages Project</title>
+  <title>Demo GitHub Pages Real SW Preview</title>
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
   <div class="card">
-    <span class="badge">GitHub Pages Ready</span>
+    <span class="badge">Real HTTP Service Worker</span>
     <h1>Halo, Developer! 👋</h1>
-    <p>Ubah kode di panel sebelah kiri atau import file <strong>.zip</strong> repositori GitHub Anda untuk melihat pratinjau real-time di Desktop, Android, dan iOS.</p>
+    <p>Halaman ini disajikan lewat <strong>Service Worker Virtual Server</strong> asli sehingga URL, <code>fetch()</code>, ES Modules, <code>localStorage</code>, dan navigasi berjalan 100% persis seperti web terpublikasi.</p>
     <div class="counter-box">
       <button id="btn-dec">−</button>
       <span id="count-val">0</span>
       <button id="btn-inc">+</button>
     </div>
+    <div id="json-status" class="json-box">Memuat ./data/config.json...</div>
+    <div class="nav-links">
+      <a href="./about.html" class="btn-link">Buka Halaman About.html →</a>
+    </div>
     <p class="hint" id="device-info">Mendeteksi ukuran layar...</p>
   </div>
-  <script src="./js/main.js"></script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>`
+    },
+    "about.html": {
+      type: "text",
+      content: `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Demo Multi-Page</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Multi-Page Navigation</span>
+    <h1>Halaman Kedua (about.html)</h1>
+    <p>Navigasi antar file HTML berjalan secara alami melalui protokol HTTP browser tanpa manipulasi DOM.</p>
+    <div class="nav-links">
+      <a href="./index.html" class="btn-link">← Kembali ke index.html</a>
+    </div>
+  </div>
 </body>
 </html>`
     },
@@ -48,14 +73,14 @@ body {
 }
 
 .card {
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 20px;
+  background: rgba(30, 41, 59, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 22px;
   padding: 28px;
-  max-width: 420px;
+  max-width: 440px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
 }
 
 .badge {
@@ -77,9 +102,9 @@ h1 {
 
 p {
   color: #cbd5e1;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   line-height: 1.5;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .counter-box {
@@ -90,12 +115,12 @@ p {
   padding: 8px 18px;
   border-radius: 12px;
   border: 1px solid #334155;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .counter-box button {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   border: none;
   background: #10b981;
@@ -111,42 +136,107 @@ p {
   min-width: 28px;
 }
 
+.json-box {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px dashed #334155;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #38bdf8;
+  margin-bottom: 14px;
+}
+
+.nav-links {
+  margin-bottom: 14px;
+}
+
+.btn-link {
+  display: inline-block;
+  color: #34d399;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
 .hint {
   font-size: 0.78rem;
   color: #94a3b8;
   margin-bottom: 0;
+}
+
+@media (max-width: 430px) {
+  .card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+  h1 {
+    font-size: 1.32rem;
+  }
+}`
+    },
+    "js/helper.js": {
+      type: "text",
+      content: `export function formatViewport(w, h) {
+  return \`Viewport nyata: \${w}px × \${h}px | Origin: \${location.origin}\`;
 }`
     },
     "js/main.js": {
       type: "text",
-      content: `let count = 0;
+      content: `import { formatViewport } from "./helper.js";
+
+let count = Number(localStorage.getItem("demo_count") || 0);
 const valEl = document.getElementById("count-val");
 const infoEl = document.getElementById("device-info");
+const jsonEl = document.getElementById("json-status");
+valEl.textContent = count;
 
 document.getElementById("btn-inc").addEventListener("click", () => {
   count++;
   valEl.textContent = count;
-  console.log("Counter bertambah:", count);
+  localStorage.setItem("demo_count", count);
+  console.log("Counter tersimpan ke localStorage:", count);
 });
 
 document.getElementById("btn-dec").addEventListener("click", () => {
   count--;
   valEl.textContent = count;
-  console.log("Counter berkurang:", count);
+  localStorage.setItem("demo_count", count);
+  console.log("Counter tersimpan ke localStorage:", count);
 });
 
+fetch("./data/config.json")
+  .then((res) => res.json())
+  .then((data) => {
+    jsonEl.textContent = \`HTTP Fetch OK: \${data.project} v\${data.version}\`;
+  })
+  .catch((err) => {
+    jsonEl.textContent = "Error: " + err.message;
+  });
+
 function updateViewportText() {
-  infoEl.textContent = \`Viewport aktif: \${window.innerWidth}px × \${window.innerHeight}px\`;
+  infoEl.textContent = formatViewport(window.innerWidth, window.innerHeight);
 }
 
 window.addEventListener("resize", updateViewportText);
 updateViewportText();`
     },
+    "data/config.json": {
+      type: "text",
+      content: `{
+  "project": "GitPreview Real Service Worker",
+  "version": "3.0.0",
+  "mode": "100% Native Browser HTTP"
+}`
+    },
     "README.md": {
       type: "text",
-      content: `# Sample GitHub Pages Repository
+      content: `# GitPreview IDE v3 — Real Service Worker GitHub Pages Simulator
 
-Proyek contoh ini mendemonstrasikan bagaimana **GitPreview IDE** membaca struktur folder, HTML, CSS, dan JavaScript lalu merendernya secara langsung.`
+Menggunakan Service Worker (\`sw.js\`) untuk menyajikan seluruh isi repositori ZIP melalui path HTTP asli (\`/__preview__/\`), sehingga hasilnya 100% persis seperti saat sudah di-deploy menjadi website.`
     }
   }
 };
