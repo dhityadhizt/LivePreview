@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitPreview IDE — GitHub Repo & Real-Time Multi-Device Preview</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- JSZip for Client-Side GitHub ZIP Extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body class="bg-[#0d1117] text-[#c9d1d9] font-sans h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- Top Navbar (GitHub Dark Style) -->
+  <header class="h-13 bg-[#161b22] border-b border-[#30363d] px-4 py-2 flex items-center justify-between gap-3 shrink-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 text-white font-bold tracking-tight">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow">
+          <i data-lucide="git-branch" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="text-sm sm:text-base">GitPreview <span class="text-emerald-400 font-normal">IDE</span></span>
+      </div>
+
+      <span class="hidden md:inline-block text-[#30363d]">|</span>
+
+      <!-- Repo Name Badge -->
+      <div id="repo-badge" class="hidden sm:flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] px-2.5 py-1 rounded-md text-xs text-[#8b949e]">
+        <i data-lucide="folder-git-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span id="repo-name-display" class="font-mono text-[#c9d1d9]">sample-portfolio-main</span>
+      </div>
+    </div>
+
+    <!-- Action Controls -->
+    <div class="flex items-center gap-2">
+      <label for="zip-upload" class="cursor-pointer flex items-center gap-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium px-3 py-1.5 rounded-md transition shadow-sm">
+        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+        <span>Import ZIP GitHub</span>
+      </label>
+      <input type="file" id="zip-upload" accept=".zip" class="hidden" />
+
+      <button id="btn-load-sample" class="flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] border border-[#363b42] text-xs font-medium px-3 py-1.5 rounded-md transition">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden sm:inline">Contoh Repo</span>
+      </button>
+
+      <button id="btn-export-zip" class="flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] border border-[#363b42] text-xs font-medium px-3 py-1.5 rounded-md transition" title="Download proyek yang sudah diedit sebagai ZIP">
+        <i data-lucide="download" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span class="hidden md:inline">Export ZIP</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main id="workspace" class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- LEFT PANE: File Explorer & Code Editor -->
+    <section id="left-pane" class="w-full lg:w-1/2 h-1/2 lg:h-full flex border-b lg:border-b-0 lg:border-r border-[#30363d] bg-[#0d1117] overflow-hidden">
+
+      <!-- Sidebar: File Tree -->
+      <aside class="w-56 sm:w-64 bg-[#161b22]/60 border-r border-[#30363d] flex flex-col shrink-0">
+        <!-- Search & Dropzone Header -->
+        <div class="p-2.5 border-b border-[#30363d] space-y-2">
+          <div id="dropzone" class="border border-dashed border-[#30363d] hover:border-emerald-500/70 bg-[#0d1117]/60 rounded-md p-2 text-center cursor-pointer transition group">
+            <p class="text-[11px] text-[#8b949e] group-hover:text-[#c9d1d9]">
+              Drag & drop file <span class="text-emerald-400 font-mono">.zip</span> GitHub di sini
+            </p>
+          </div>
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2"></i>
+            <input id="file-search" type="text" placeholder="Cari file..." class="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500 rounded-md pl-8 pr-2 py-1 text-xs text-[#c9d1d9] placeholder-[#6e7681] outline-none" />
+          </div>
+        </div>
+
+        <!-- Entry HTML Selector -->
+        <div class="px-2.5 py-2 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between gap-1">
+          <span class="text-[10px] uppercase tracking-wider text-[#8b949e] font-semibold">Entry HTML:</span>
+          <select id="entry-html-select" class="bg-[#0d1117] border border-[#30363d] rounded px-1.5 py-0.5 text-[11px] font-mono text-emerald-400 outline-none max-w-[130px] truncate">
+            <option value="index.html">index.html</option>
+          </select>
+        </div>
+
+        <!-- File Tree List -->
+        <div id="file-tree" class="flex-1 overflow-y-auto p-1.5 space-y-0.5 text-xs font-mono">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- File Stats Footer -->
+        <div class="px-3 py-1.5 border-t border-[#30363d] text-[10px] text-[#8b949e] flex justify-between">
+          <span id="file-count">0 files</span>
+          <span id="repo-size">0 KB</span>
+        </div>
+      </aside>
+
+      <!-- Editor / Viewer Area -->
+      <div class="flex-1 flex flex-col min-w-0 bg-[#0d1117]">
+        <!-- Active File Tab Bar -->
+        <div class="h-9 bg-[#161b22] border-b border-[#30363d] px-3 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2 min-w-0">
+            <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+            <span id="active-file-path" class="text-xs font-mono text-[#c9d1d9] truncate">index.html</span>
+            <span id="unsaved-dot" class="hidden w-2 h-2 rounded-full bg-amber-400" title="Perubahan diterapkan secara real-time"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="file-lang-badge" class="text-[10px] uppercase px-1.5 py-0.5 rounded bg-[#21262d] text-[#8b949e] font-mono">HTML</span>
+            <button id="btn-copy-code" class="text-[#8b949e] hover:text-white p-1 rounded transition" title="Salin kode">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Code Editor Container (Line Numbers + Highlight Overlay + Transparent Textarea) -->
+        <div id="code-editor-wrapper" class="flex-1 relative flex overflow-hidden font-mono text-xs sm:text-[13px] leading-6">
+          <!-- Line Numbers -->
+          <div id="line-numbers" class="w-11 bg-[#0d1117] border-r border-[#21262d] text-[#484f58] text-right pr-2.5 pt-3 select-none overflow-hidden shrink-0">1</div>
+
+          <!-- Editor Stack -->
+          <div class="relative flex-1 h-full overflow-hidden">
+            <pre id="code-highlight-pre" aria-hidden="true" class="absolute inset-0 m-0 p-3 pointer-events-none overflow-auto whitespace-pre"><code id="code-highlight" class="language-html"></code></pre>
+            <textarea id="code-textarea" spellcheck="false" autocomplete="off" autocapitalize="off" class="absolute inset-0 w-full h-full m-0 p-3 bg-transparent text-transparent caret-white resize-none outline-none overflow-auto whitespace-pre font-mono text-xs sm:text-[13px] leading-6 selection:bg-emerald-500/30"></textarea>
+          </div>
+        </div>
+
+        <!-- Binary / Image Asset Viewer (Hidden by default) -->
+        <div id="asset-viewer" class="hidden flex-1 flex-col items-center justify-center p-6 bg-[#0d1117] overflow-auto">
+          <div class="max-w-md w-full bg-[#161b22] border border-[#30363d] rounded-xl p-4 text-center space-y-3">
+            <img id="asset-preview-img" src="" alt="Asset Preview" class="max-h-64 mx-auto rounded border border-[#30363d] object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iIzIxMjYyZCIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMyMTI2MmQiLz48L3N2Zz4=')]" />
+            <p id="asset-info" class="text-xs text-[#8b949e] font-mono"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: Real-Time Multi-Device Preview -->
+    <section id="right-pane" class="w-full lg:w-1/2 h-1/2 lg:h-full flex flex-col bg-[#090c10] overflow-hidden">
+      <!-- Preview Toolbar -->
+      <div class="h-11 bg-[#161b22] border-b border-[#30363d] px-3 flex items-center justify-between gap-2 shrink-0">
+        <!-- Device Switcher -->
+        <div class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-[#30363d]">
+          <button data-device="desktop" class="device-btn active flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition">
+            <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+            <span>Desktop</span>
+          </button>
+          <button data-device="android" class="device-btn flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#8b949e] hover:text-white transition">
+            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+            <span>Android</span>
+          </button>
+          <button data-device="ios" class="device-btn flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#8b949e] hover:text-white transition">
+            <i data-lucide="tablet-smartphone" class="w-3.5 h-3.5"></i>
+            <span>iOS</span>
+          </button>
+        </div>
+
+        <!-- Viewport Controls -->
+        <div class="flex items-center gap-2">
+          <span id="viewport-dimensions" class="hidden sm:inline text-[11px] font-mono text-[#8b949e] bg-[#0d1117] px-2 py-0.5 rounded border border-[#30363d]">1280 × 800</span>
+
+          <button id="btn-rotate" class="p-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#363b42] transition disabled:opacity-40" title="Putar Orientasi (Portrait / Landscape)">
+            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <button id="btn-refresh-preview" class="p-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-emerald-400 border border-[#363b42] transition" title="Refresh Pratinjau">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Device Stage Canvas -->
+      <div id="preview-stage" class="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-6 relative bg-[radial-gradient(#21262d_1px,transparent_1px)] [background-size:18px_18px]">
+        <!-- Device Frame Wrapper -->
+        <div id="device-frame" class="device-desktop transition-all duration-300 shadow-2xl flex flex-col bg-white overflow-hidden">
+
+          <!-- Desktop Browser Chrome -->
+          <div id="chrome-desktop" class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+            </div>
+            <div class="flex-1 mx-2 bg-[#0d1117] rounded px-2.5 py-0.5 text-[11px] font-mono text-[#8b949e] flex items-center justify-between truncate">
+              <span id="preview-url-bar" class="truncate">https://username.github.io/repo/index.html</span>
+              <span class="text-emerald-400 text-[10px] flex items-center gap-1 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
+              </span>
+            </div>
+          </div>
+
+          <!-- Android Status Bar -->
+          <div id="chrome-android" class="hidden h-7 bg-[#111827] text-white px-4 flex items-center justify-between text-[11px] font-medium shrink-0 relative">
+            <span>09:41</span>
+            <!-- Punch-hole Camera -->
+            <span class="w-2.5 h-2.5 rounded-full bg-black border border-gray-700"></span>
+            <div class="flex items-center gap-1.5 text-[10px]">
+              <span>5G</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <!-- iOS Status Bar + Dynamic Island -->
+          <div id="chrome-ios" class="hidden h-9 bg-white text-black px-5 flex items-center justify-between text-[11px] font-semibold shrink-0 relative">
+            <span>9:41</span>
+            <!-- Dynamic Island -->
+            <div class="w-24 h-5 bg-black rounded-full flex items-center justify-end px-2">
+              <span class="w-2 h-2 rounded-full bg-[#1a1a2e] border border-gray-800"></span>
+            </div>
+            <div class="flex items-center gap-1 text-[10px]">
+              <span>5G</span>
+              <span>🔋</span>
+            </div>
+          </div>
+
+          <!-- Live Render Iframe -->
+          <iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin" class="w-full flex-1 bg-white border-0"></iframe>
+
+          <!-- Android Navigation Gesture Bar -->
+          <div id="nav-android" class="hidden h-4 bg-[#111827] flex items-center justify-center shrink-0">
+            <span class="w-24 h-1 rounded-full bg-gray-500"></span>
+          </div>
+
+          <!-- iOS Home Indicator -->
+          <div id="nav-ios" class="hidden h-5 bg-white flex items-center justify-center shrink-0">
+            <span class="w-28 h-1 rounded-full bg-black/80"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Console Bar -->
+      <div class="bg-[#161b22] border-t border-[#30363d] shrink-0">
+        <button id="btn-toggle-console" class="w-full px-3 py-1.5 flex items-center justify-between text-xs text-[#8b949e] hover:text-white transition">
+          <div class="flex items-center gap-2">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span class="font-mono">Console Output</span>
+            <span id="console-badge" class="px-1.5 py-0.2 rounded-full bg-[#21262d] text-[10px]">0</span>
+          </div>
+          <i id="console-chevron" data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+        </button>
+        <div id="console-panel" class="hidden h-28 overflow-y-auto bg-[#0d1117] border-t border-[#30363d] p-2 font-mono text-[11px] space-y-1">
+          <div class="text-[#6e7681]">// Log console dari pratinjau akan muncul di sini...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-[#238636] text-white text-xs font-medium px-4 py-2.5 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 z-50">
+    Berhasil!
+  </div>
+
+  <!-- Modular Application Scripts -->
+  <script src="./js/sampleRepo.js"></script>
+  <script src="./js/bundler.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
